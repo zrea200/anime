@@ -2,17 +2,17 @@ import React, { useState } from 'react';
 import { Stage, Layer, Rect } from 'react-konva';
 
 /**
- * 图层面板组件
+ * 轨道面板组件
  * 
  * @param {Object} props
- * @param {Array} props.layers - 图层数组
- * @param {string} props.activeLayerId - 当前活动图层ID
- * @param {Function} props.onSelectLayer - 选择图层的回调函数
- * @param {Function} props.onAddLayer - 添加图层的回调函数
- * @param {Function} props.onDeleteLayer - 删除图层的回调函数
- * @param {Function} props.onMoveLayer - 移动图层的回调函数
- * @param {Function} props.onUpdateLayer - 更新图层的回调函数
- * @param {Array} props.elements - 元素数组，用于生成图层缩略图
+ * @param {Array} props.layers - 轨道数组
+ * @param {string} props.activeLayerId - 当前活动轨道ID
+ * @param {Function} props.onSelectLayer - 选择轨道的回调函数
+ * @param {Function} props.onAddLayer - 添加轨道的回调函数
+ * @param {Function} props.onDeleteLayer - 删除轨道的回调函数
+ * @param {Function} props.onMoveLayer - 移动轨道的回调函数
+ * @param {Function} props.onUpdateLayer - 更新轨道的回调函数
+ * @param {Array} props.elements - 元素数组，用于生成轨道缩略图
  */
 const LayerPanel = ({ 
   layers, 
@@ -28,13 +28,13 @@ const LayerPanel = ({
   const [editingLayerId, setEditingLayerId] = useState(null);
   const [editingName, setEditingName] = useState('');
 
-  // 开始编辑图层名称
+  // 开始编辑轨道名称
   const startEditing = (layer) => {
     setEditingLayerId(layer.id);
     setEditingName(layer.name);
   };
 
-  // 保存编辑后的图层名称
+  // 保存编辑后的轨道名称
   const saveLayerName = () => {
     if (editingLayerId) {
       onUpdateLayer(editingLayerId, { name: editingName });
@@ -56,7 +56,7 @@ const LayerPanel = ({
     }
   };
 
-  // 生成图层缩略图
+  // 生成轨道缩略图
   const renderLayerThumbnail = (layerId) => {
     // 获取该图层的所有元素
     const layerElements = elements.filter(el => el.layerId === layerId);
@@ -64,7 +64,7 @@ const LayerPanel = ({
     if (layerElements.length === 0) {
       return (
         <div className="layer-thumbnail empty">
-          <span>空图层</span>
+          <span>空轨道</span>
         </div>
       );
     }
@@ -96,29 +96,29 @@ const LayerPanel = ({
   return (
     <div className="layer-panel">
       <div className="layer-panel-header">
-        <h3>图层</h3>
+        <h3>轨道</h3>
         <div className="layer-controls">
-          <button onClick={onAddLayer} title="添加图层">
+          <button onClick={onAddLayer} title="添加轨道">
             <i className="fa fa-plus"></i>
           </button>
           <button 
             onClick={() => activeLayerId && onDeleteLayer(activeLayerId)} 
             disabled={!activeLayerId || layers.length <= 1}
-            title="删除图层"
+            title="删除轨道"
           >
             <i className="fa fa-trash"></i>
           </button>
           <button 
             onClick={() => activeLayerId && onMoveLayer(activeLayerId, 'up')} 
             disabled={!activeLayerId || layers.findIndex(l => l.id === activeLayerId) === 0}
-            title="上移图层"
+            title="上移轨道"
           >
             <i className="fa fa-arrow-up"></i>
           </button>
           <button 
             onClick={() => activeLayerId && onMoveLayer(activeLayerId, 'down')} 
             disabled={!activeLayerId || layers.findIndex(l => l.id === activeLayerId) === layers.length - 1}
-            title="下移图层"
+            title="下移轨道"
           >
             <i className="fa fa-arrow-down"></i>
           </button>
@@ -158,7 +158,7 @@ const LayerPanel = ({
                   e.stopPropagation();
                   onUpdateLayer(layer.id, { visible: !layer.visible });
                 }}
-                title={layer.visible ? "隐藏图层" : "显示图层"}
+                title={layer.visible ? "隐藏轨道" : "显示轨道"}
               >
                 <i className={`fa ${layer.visible ? 'fa-eye' : 'fa-eye-slash'}`}></i>
               </button>
@@ -169,7 +169,7 @@ const LayerPanel = ({
                   e.stopPropagation();
                   onUpdateLayer(layer.id, { locked: !layer.locked });
                 }}
-                title={layer.locked ? "解锁图层" : "锁定图层"}
+                title={layer.locked ? "解锁轨道" : "锁定轨道"}
               >
                 <i className={`fa ${layer.locked ? 'fa-lock' : 'fa-unlock'}`}></i>
               </button>

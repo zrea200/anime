@@ -50,10 +50,20 @@ const TimelineClip = ({
         onDragMove={onDragMove}
         onDragEnd={onDragEnd}
         dragBoundFunc={(pos) => {
-          // 只允许在轨道内水平拖动
+          // 允许水平和垂直拖动，但垂直方向只能在轨道位置
+          // 计算当前鼠标位置对应的轨道索引
+          const headerHeight = 30; // 时间轴头部高度
+          const mouseY = pos.y;
+          
+          // 计算鼠标位置对应的轨道索引（从0开始）
+          const trackIndex = Math.max(0, Math.floor((mouseY - headerHeight) / trackHeight));
+          
+          // 计算对应轨道的Y坐标
+          const trackY = headerHeight + trackIndex * trackHeight + trackPadding;
+          
           return {
             x: Math.max(timelinePadding, Math.min(timelineWidth - width - timelinePadding, pos.x)),
-            y: y + trackPadding // 固定垂直位置
+            y: trackY // 贴合到对应轨道
           };
         }}
       />
@@ -85,13 +95,13 @@ const TimelineClip = ({
         onDragStart={(e) => onDragStart(e, element.id, 'start')}
         onDragMove={onDragMove}
         onDragEnd={onDragEnd}
-        dragBoundFunc={(pos) => {
-          // 只允许在轨道内水平拖动，且不能超过右边界
-          return {
-            x: Math.max(timelinePadding, Math.min(startX + width - 10, pos.x)),
-            y: y + trackPadding // 固定垂直位置
-          };
-        }}
+          dragBoundFunc={(pos) => {
+            // 只允许在轨道内水平拖动，且不能超过右边界
+            return {
+              x: Math.max(timelinePadding, Math.min(startX + width - 10, pos.x)),
+              y: pos.y // 保持当前垂直位置
+            };
+          }}
       />
       
       {/* 右侧调整区域 - 鼠标悬停检测和拖动 */}
@@ -107,13 +117,13 @@ const TimelineClip = ({
         onDragStart={(e) => onDragStart(e, element.id, 'end')}
         onDragMove={onDragMove}
         onDragEnd={onDragEnd}
-        dragBoundFunc={(pos) => {
-          // 只允许在轨道内水平拖动，且不能超过左边界
-          return {
-            x: Math.max(startX + 10, Math.min(timelineWidth - timelinePadding, pos.x)),
-            y: y + trackPadding // 固定垂直位置
-          };
-        }}
+          dragBoundFunc={(pos) => {
+            // 只允许在轨道内水平拖动，且不能超过左边界
+            return {
+              x: Math.max(startX + 10, Math.min(timelineWidth - timelinePadding, pos.x)),
+              y: pos.y // 保持当前垂直位置
+            };
+          }}
       />
     </Group>
   );

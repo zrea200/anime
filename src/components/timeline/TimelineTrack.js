@@ -6,7 +6,7 @@ import TimelineClip from './TimelineClip';
  * 时间轴轨道组件
  */
 const TimelineTrack = ({
-  layer,
+  track,
   index,
   headerHeight,
   trackHeight,
@@ -19,7 +19,7 @@ const TimelineTrack = ({
   clipColor,
   clipSelectedColor,
   isActive,
-  layerElements,
+  trackElements,
   draggedElementId,
   hoveredHandle,
   timeToX,
@@ -32,7 +32,7 @@ const TimelineTrack = ({
   const y = headerHeight + index * trackHeight;
   
   return (
-    <Group key={`track-${layer.id}`}>
+    <Group key={`track-${track.id}`}>
       {/* 轨道背景 */}
       <Rect
         x={0}
@@ -48,7 +48,7 @@ const TimelineTrack = ({
       <Text
         x={5}
         y={y + trackHeight / 2 - 7}
-        text={layer.name}
+        text={`轨道 ${index + 1}`}
         fill={textColor}
         fontSize={12}
         width={100}
@@ -56,7 +56,7 @@ const TimelineTrack = ({
       />
       
       {/* 元素片段 */}
-      {layerElements.map(element => {
+      {trackElements.map(element => {
         const startX = timeToX(element.time || 0);
         const duration = element.duration || 5;
         const width = (duration / totalDuration) * (timelineWidth - timelinePadding * 2);

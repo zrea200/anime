@@ -28,12 +28,12 @@ function App() {
   const [frameRate, setFrameRate] = useState(30); // 默认30fps
   const [timeScale, setTimeScale] = useState(1); // 时间轴缩放级别
 
-  // 初始化默认图层
+  // 初始化默认轨道
   useEffect(() => {
     if (layers.length === 0) {
       const defaultLayer = {
-        id: uuidv4(),
-        name: '图层 1',
+        id: '1',
+        name: '轨道 1',
         visible: true,
         locked: false,
         order: 0
@@ -73,11 +73,11 @@ function App() {
     };
   }, [isPlaying, currentTime, totalDuration]);
 
-  // 添加新图层
+  // 添加新轨道
   const addLayer = () => {
     const newLayer = {
-      id: uuidv4(),
-      name: `图层 ${layers.length + 1}`,
+      id: `${layers.length + 1}`,
+      name: `轨道 ${layers.length + 1}`,
       visible: true,
       locked: false,
       order: layers.length
@@ -400,8 +400,11 @@ function App() {
           elements={elements}
         />
         <Timeline 
-          layers={layers}
-          elements={elements}
+          tracks={layers}
+          elements={elements.map(el => ({
+            ...el,
+            trackId: el.layerId // 将layerId映射为trackId
+          }))}
           currentTime={currentTime}
           totalDuration={totalDuration}
           onTimeChange={setCurrentTime}
@@ -410,7 +413,15 @@ function App() {
           onTimeScaleChange={setTimeScale}
           isPlaying={isPlaying}
           frameRate={frameRate}
-          onUpdateElement={updateElement}
+          onUpdateElement={(id, newAttrs) => {
+            // 如果有trackId，将其转换回layerId
+            if (newAttrs.trackId) {
+              const { trackId, ...rest } = newAttrs;
+              updateElement(id, { ...rest, layerId: trackId });
+            } else {
+              updateElement(id, newAttrs);
+            }
+          }}
         />
       </div>
     </div>

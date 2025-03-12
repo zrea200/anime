@@ -10,7 +10,7 @@ import { timeToX, xToTime, formatTime } from './timeline/TimelineUtils';
  * 时间轴组件
  * 
  * @param {Object} props
- * @param {Array} props.layers - 图层数组
+ * @param {Array} props.tracks - 轨道数组
  * @param {Array} props.elements - 元素数组
  * @param {number} props.currentTime - 当前时间（秒）
  * @param {number} props.totalDuration - 总时长（秒）
@@ -23,7 +23,7 @@ import { timeToX, xToTime, formatTime } from './timeline/TimelineUtils';
  * @param {Function} props.onUpdateElement - 更新元素的回调函数
  */
 const Timeline = ({
-  layers,
+  tracks,
   elements,
   currentTime,
   totalDuration,
@@ -46,8 +46,8 @@ const Timeline = ({
   const [initialDragData, setInitialDragData] = useState(null);
   const [hoveredHandle, setHoveredHandle] = useState(null); // 格式: "elementId-left" 或 "elementId-right"
   
-  // 从App.js获取当前活动图层ID
-  const activeLayerId = layers.length > 0 ? layers[0].id : null;
+  // 从App.js获取当前活动轨道ID
+  const activeTrackId = tracks.length > 0 ? tracks[0].id : null;
 
   // 时间轴常量
   const TIMELINE_PADDING = 10;
@@ -133,6 +133,7 @@ const Timeline = ({
     
     const stage = e.target.getStage();
     const pointerX = stage.getPointerPosition().x;
+    const pointerY = stage.getPointerPosition().y;
     const deltaX = pointerX - initialDragData.pointerX;
     const deltaTime = (deltaX / (timelineWidth - TIMELINE_PADDING * 2)) * totalDuration;
     
@@ -161,9 +162,23 @@ const Timeline = ({
       // 移动整个片段
       const newStartTime = Math.max(0, initialDragData.time + deltaTime);
       
-      newAttrs = {
-        time: newStartTime
-      };
+      // 检测是否需要更改轨道
+      // 计算当前指针位置对应的轨道索引
+      const trackIndex = Math.floor((pointerY - HEADER_HEIGHT) / TRACK_HEIGHT);
+      
+      // 确保轨道索引在有效范围内
+      if (trackIndex >= 0 && trackIndex < tracks.length) {
+        const newTrackId = tracks[trackIndex].id;
+        
+        newAttrs = {
+          time: newStartTime,
+          trackId: newTrackId // 更新轨道ID
+        };
+      } else {
+        newAttrs = {
+          time: newStartTime
+        };
+      }
     }
     
     onUpdateElement(draggedElementId, newAttrs);
@@ -230,7 +245,7 @@ const Timeline = ({
               x={0}
               y={0}
               width={timelineWidth}
-              height={HEADER_HEIGHT + layers.length * TRACK_HEIGHT}
+              height={HEADER_HEIGHT + tracks.length * TRACK_HEIGHT}
               fill={TIMELINE_BG_COLOR}
             />
             
@@ -246,13 +261,13 @@ const Timeline = ({
             
             {/* 轨道和元素片段 */}
             <Group>
-              {layers.map((layer, index) => {
-                const layerElements = elements.filter(el => el.layerId === layer.id);
+              {tracks.map((track, index) => {
+                const trackElements = elements.filter(el => el.trackId === track.id);
                 
                 return (
                   <TimelineTrack
-                    key={`track-${layer.id}`}
-                    layer={layer}
+                    key={`track-${track.id}`}
+                    track={track}
                     index={index}
                     headerHeight={HEADER_HEIGHT}
                     trackHeight={TRACK_HEIGHT}
@@ -264,8 +279,8 @@ const Timeline = ({
                     textColor={TEXT_COLOR}
                     clipColor={CLIP_COLOR}
                     clipSelectedColor={CLIP_SELECTED_COLOR}
-                    isActive={layer.id === activeLayerId}
-                    layerElements={layerElements}
+                    isActive={track.id === activeTrackId}
+                    trackElements={trackElements}
                     draggedElementId={draggedElementId}
                     hoveredHandle={hoveredHandle}
                     timeToX={timeToXWithContext}
@@ -282,7 +297,7 @@ const Timeline = ({
             {/* 播放头 */}
             <TimelinePlayhead 
               x={timeToXWithContext(currentTime)}
-              height={HEADER_HEIGHT + layers.length * TRACK_HEIGHT}
+              height={HEADER_HEIGHT + tracks.length * TRACK_HEIGHT}
               headerHeight={HEADER_HEIGHT}
               playheadColor={PLAYHEAD_COLOR}
               timelinePadding={TIMELINE_PADDING}
