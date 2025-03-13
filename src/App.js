@@ -199,7 +199,8 @@ function App() {
       rotation: 0,
       layerId: activeLayerId, // 关联到当前活动图层
       time: currentTime, // 添加时间属性
-      duration: 5 // 默认持续5秒
+      duration: 5, // 默认持续5秒
+      _isNew: true // 标记为新元素，用于居中放置
     };
     setElements([...elements, newElement]);
   };
@@ -221,7 +222,8 @@ function App() {
       rotation: 0,
       layerId: activeLayerId, // 关联到当前活动图层
       time: currentTime, // 添加时间属性
-      duration: 5 // 默认持续5秒
+      duration: 5, // 默认持续5秒
+      _isNew: true // 标记为新元素，用于居中放置
     };
     setElements([...elements, newElement]);
   };
@@ -262,7 +264,8 @@ function App() {
         rotation: 0,
         layerId: activeLayerId, // 关联到当前活动图层
         time: currentTime, // 添加时间属性
-        duration: 5 // 默认持续5秒
+        duration: 5, // 默认持续5秒
+        _isNew: true // 标记为新元素，用于居中放置
       };
       
       setElements([...elements, newElement]);
@@ -380,49 +383,53 @@ function App() {
         frameRate={frameRate}
         onFrameRateChange={setFrameRate}
       />
-      <div className="main-content">
-        <Canvas 
-          elements={getVisibleElements()}
-          selectedId={selectedId}
-          onSelect={handleSelect}
-          onChange={updateElement}
-        />
-      </div>
-      <div className="bottom-panel">
-        <LayerPanel 
-          layers={layers}
-          activeLayerId={activeLayerId}
-          onSelectLayer={setActiveLayerId}
-          onAddLayer={addLayer}
-          onDeleteLayer={deleteLayer}
-          onMoveLayer={moveLayer}
-          onUpdateLayer={updateLayer}
-          elements={elements}
-        />
-        <Timeline 
-          tracks={layers}
-          elements={elements.map(el => ({
-            ...el,
-            trackId: el.layerId // 将layerId映射为trackId
-          }))}
-          currentTime={currentTime}
-          totalDuration={totalDuration}
-          onTimeChange={setCurrentTime}
-          onDurationChange={setTotalDuration}
-          timeScale={timeScale}
-          onTimeScaleChange={setTimeScale}
-          isPlaying={isPlaying}
-          frameRate={frameRate}
-          onUpdateElement={(id, newAttrs) => {
-            // 如果有trackId，将其转换回layerId
-            if (newAttrs.trackId) {
-              const { trackId, ...rest } = newAttrs;
-              updateElement(id, { ...rest, layerId: trackId });
-            } else {
-              updateElement(id, newAttrs);
-            }
-          }}
-        />
+      <div className="editor-layout">
+        <div className="editor-main">
+          <div className="canvas-area">
+            <Canvas 
+              elements={getVisibleElements()}
+              selectedId={selectedId}
+              onSelect={handleSelect}
+              onChange={updateElement}
+            />
+          </div>
+        </div>
+        <div className="bottom-panel">
+          <LayerPanel 
+            layers={layers}
+            activeLayerId={activeLayerId}
+            onSelectLayer={setActiveLayerId}
+            onAddLayer={addLayer}
+            onDeleteLayer={deleteLayer}
+            onMoveLayer={moveLayer}
+            onUpdateLayer={updateLayer}
+            elements={elements}
+          />
+          <Timeline 
+            tracks={layers}
+            elements={elements.map(el => ({
+              ...el,
+              trackId: el.layerId // 将layerId映射为trackId
+            }))}
+            currentTime={currentTime}
+            totalDuration={totalDuration}
+            onTimeChange={setCurrentTime}
+            onDurationChange={setTotalDuration}
+            timeScale={timeScale}
+            onTimeScaleChange={setTimeScale}
+            isPlaying={isPlaying}
+            frameRate={frameRate}
+            onUpdateElement={(id, newAttrs) => {
+              // 如果有trackId，将其转换回layerId
+              if (newAttrs.trackId) {
+                const { trackId, ...rest } = newAttrs;
+                updateElement(id, { ...rest, layerId: trackId });
+              } else {
+                updateElement(id, newAttrs);
+              }
+            }}
+          />
+        </div>
       </div>
     </div>
   );

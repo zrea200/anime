@@ -26,21 +26,40 @@ code {
   flex-direction: column;
   height: 100vh;
   width: 100vw;
-  background-color: #f0f0f0;
+  background-color: #2c2c2c;
+  color: white;
 }
 
-.main-content {
+.editor-layout {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.editor-main {
+  height: calc(100vh - 60px - 250px); /* 减去工具栏和底部面板的高度 */
+  width: 100%;
+  background-color: #1a1a1a;
   position: relative;
   overflow: hidden;
-  background-color: #f8f8f8;
+}
+
+.canvas-area {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 20px;
+  overflow: hidden;
 }
 
 .bottom-panel {
   display: flex;
   height: 250px;
-  border-top: 1px solid #ddd;
-  background-color: #e0e0e0;
+  border-top: 1px solid #444;
+  background-color: #2c2c2c;
 }
 
 /* 工具栏样式 */
@@ -124,8 +143,70 @@ code {
 .canvas-container {
   width: 100%;
   height: 100%;
-  background-color: #f8f8f8;
   position: relative;
+  overflow: hidden;
+}
+
+/* 画布背景 */
+.canvas-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 20px;
+  z-index: 0;
+}
+
+/* 画布框架 - 这是白色区域 */
+.canvas-frame {
+  width: 1920px;
+  height: 1080px;
+  background-color: white;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  border: 1px solid #444;
+  position: relative;
+  transform-origin: top center;
+  transform: scale(0.5); /* 初始缩放，会被JS动态调整 */
+}
+
+/* 画布尺寸信息 */
+.canvas-size-info {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: monospace;
+  z-index: 1000;
+}
+
+/* Konva舞台容器 */
+.canvas-stage-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none; /* 允许点击穿透到背景 */
+}
+
+/* 确保Konva舞台可以接收事件 */
+.canvas-stage-container .konvajs-content {
+  pointer-events: auto;
+  background-color: transparent !important;
+}
+
+/* 确保Konva舞台的canvas是透明的 */
+.canvas-stage-container canvas {
+  background-color: transparent !important;
 }
 
 /* 图层面板样式 */
