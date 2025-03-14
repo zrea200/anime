@@ -677,3 +677,123 @@ code {
   width: 100%;
   margin-top: 5px;
 }
+
+/* 关键帧编辑器样式 */
+.keyframe-editor {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+}
+
+.keyframe-property {
+  margin-bottom: 15px;
+}
+
+.keyframe-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.keyframe-table th,
+.keyframe-table td {
+  padding: 6px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.keyframe-table input {
+  width: 60px;
+  padding: 4px;
+}
+
+/* 属性面板中的关键帧按钮 */
+.property-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.property-group label {
+  width: 80px;
+}
+
+.property-group input {
+  width: 60px;
+  margin-right: 8px;
+}
+
+.property-group button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.property-group button:hover {
+  background-color: #f0f0f0;
+}
+
+/* 时间轴上的关键帧点样式 */
+.timeline-keyframe {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #ff5722;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  z-index: 2;
+}
+
+/* 时间轴上的曲线样式 */
+.timeline-curve {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* 关键帧模式指示器 */
+.keyframe-indicator {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(255, 0, 0, 0.8);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  z-index: 1000;
+}
+
+.keyframe-indicator-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.blink {
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* 激活状态的工具栏按钮 */
+.toolbar-button.active {
+  background-color: #2196F3;
+  color: white;
+}
+
+/* 开始点状态的工具栏按钮 */
+.toolbar-button.keyframe-start {
+  background-color: #FF9800;
+  color: white;
+}

@@ -16,7 +16,8 @@ import React, { useRef } from 'react';
  * @param {number} props.frameRate - 帧率
  * @param {Function} props.onFrameRateChange - 帧率变化的回调函数
  */
-const Toolbar = ({ 
+// 在Toolbar组件中添加keyframeStage属性
+function Toolbar({ 
   onAddRectangle, 
   onAddCircle, 
   onAddImage, 
@@ -27,8 +28,11 @@ const Toolbar = ({
   onStop,
   currentTime,
   frameRate,
-  onFrameRateChange
-}) => {
+  onFrameRateChange,
+  keyframeMode,
+  keyframeStage,
+  onToggleKeyframeMode
+}) {
   const fileInputRef = useRef(null);
 
   // 处理图片上传
@@ -101,6 +105,17 @@ const Toolbar = ({
             <option value="60">60 fps</option>
           </select>
         </div>
+        
+        {/* 修改关键帧模式按钮 */}
+        {hasSelection && (
+          <button 
+            className={`toolbar-button ${keyframeMode ? 'active' : ''} ${keyframeStage === 'start' ? 'keyframe-start' : ''}`} 
+            onClick={onToggleKeyframeMode}
+            title={keyframeStage === 'start' ? '设置结束点 (空格键)' : '开始关键帧模式 (空格键)'}
+          >
+            <i className="fa fa-key"></i>
+          </button>
+        )}
       </div>
     </div>
   );

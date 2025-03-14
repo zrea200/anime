@@ -1,6 +1,8 @@
 import React from 'react';
 import { Group, Rect, Text } from 'react-konva';
 import TimelineClip from './TimelineClip';
+// 导入关键帧曲线组件
+import KeyframeCurve from './KeyframeCurve';
 
 /**
  * 时间轴轨道组件
@@ -33,6 +35,9 @@ const TimelineTrack = ({
   onBackgroundClick
 }) => {
   const y = headerHeight + index * trackHeight;
+  
+  // 计算时间比例尺 - 每秒对应的像素数
+  const timeScale = (timelineWidth - timelinePadding * 2) / totalDuration;
   
   return (
     <Group key={`track-${track.id}`}>
@@ -71,36 +76,65 @@ const TimelineTrack = ({
         const isRightHandleHovered = hoveredHandle === `${element.id}-right`;
         
         return (
-          <TimelineClip
-            key={`clip-${element.id}`}
-            element={element}
-            startX={startX}
-            y={y}
-            width={width}
-            trackHeight={trackHeight}
-            trackPadding={trackPadding}
-            timelinePadding={timelinePadding}
-            timelineWidth={timelineWidth}
-            isDragged={element.id === draggedElementId || element.id === selectedElementId}
-            clipColor={clipColor}
-            clipSelectedColor={clipSelectedColor}
-            isLeftHandleHovered={isLeftHandleHovered}
-            isRightHandleHovered={isRightHandleHovered}
-            onMouseEnterClip={() => {
-              document.body.style.cursor = 'move';
-            }}
-            onMouseLeaveClip={() => {
-              document.body.style.cursor = 'default';
-            }}
-            onClipClick={() => onClipSelect(element.id)}
-            onMouseEnterLeftHandle={() => onHandleHover(element.id, 'left', true)}
-            onMouseLeaveLeftHandle={() => onHandleHover(element.id, 'left', false)}
-            onMouseEnterRightHandle={() => onHandleHover(element.id, 'right', true)}
-            onMouseLeaveRightHandle={() => onHandleHover(element.id, 'right', false)}
-            onDragStart={onDragStart}
-            onDragMove={onDragMove}
-            onDragEnd={onDragEnd}
-          />
+          <>
+            <TimelineClip
+              key={`clip-${element.id}`}
+              element={element}
+              startX={startX}
+              y={y}
+              width={width}
+              trackHeight={trackHeight}
+              trackPadding={trackPadding}
+              timelinePadding={timelinePadding}
+              timelineWidth={timelineWidth}
+              isDragged={element.id === draggedElementId || element.id === selectedElementId}
+              clipColor={clipColor}
+              clipSelectedColor={clipSelectedColor}
+              isLeftHandleHovered={isLeftHandleHovered}
+              isRightHandleHovered={isRightHandleHovered}
+              onMouseEnterClip={() => {
+                document.body.style.cursor = 'move';
+              }}
+              onMouseLeaveClip={() => {
+                document.body.style.cursor = 'default';
+              }}
+              onClipClick={() => onClipSelect(element.id)}
+              onMouseEnterLeftHandle={() => onHandleHover(element.id, 'left', true)}
+              onMouseLeaveLeftHandle={() => onHandleHover(element.id, 'left', false)}
+              onMouseEnterRightHandle={() => onHandleHover(element.id, 'right', true)}
+              onMouseLeaveRightHandle={() => onHandleHover(element.id, 'right', false)}
+              onDragStart={onDragStart}
+              onDragMove={onDragMove}
+              onDragEnd={onDragEnd}
+            />
+            
+            {/* 添加关键帧曲线 */}
+            {element.keyframes && (
+              <>
+                {element.keyframes.opacity && (
+                  <KeyframeCurve 
+                    keyframes={element.keyframes}
+                    property="opacity"
+                    trackHeight={trackHeight}
+                    timeScale={timeScale}
+                    trackWidth={timelineWidth}
+                    startX={startX}
+                  />
+                )}
+                {element.keyframes.x && (
+                  <KeyframeCurve 
+                    keyframes={element.keyframes}
+                    property="x"
+                    trackHeight={trackHeight}
+                    timeScale={timeScale}
+                    trackWidth={timelineWidth}
+                    startX={startX}
+                  />
+                )}
+                {/* 可以添加更多属性的曲线 */}
+              </>
+            )}
+          </>
         );
       })}
     </Group>
@@ -108,3 +142,8 @@ const TimelineTrack = ({
 };
 
 export default TimelineTrack;
+
+const TrackTypes = {
+  ELEMENT: 'element',    // 普通元素轨道
+  ANIMATION: 'animation' // 动画曲线轨道
+};

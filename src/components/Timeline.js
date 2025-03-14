@@ -5,6 +5,7 @@ import TimelinePlayhead from './timeline/TimelinePlayhead';
 import TimelineTrack from './timeline/TimelineTrack';
 import TimelineControls from './timeline/TimelineControls';
 import { timeToX, xToTime, formatTime } from './timeline/TimelineUtils';
+import AnimationTrack from './timeline/AnimationTrack'; // 需要创建这个新组件
 
 /**
  * 时间轴组件
@@ -35,9 +36,13 @@ const Timeline = ({
   onTimeScaleChange,
   isPlaying,
   frameRate,
-  onUpdateElement,
   selectedId: externalSelectedId,
-  onSelect: externalOnSelect
+  onSelect: externalOnSelect,
+  onUpdateElement,
+  // 添加动画轨道相关的属性
+  animationTracks = [], // 默认为空数组
+  onUpdateAnimationTrack = () => {}, // 默认为空函数
+  onDeleteAnimationTrack = () => {} // 默认为空函数
 }) => {
   // 引用和状态
   const stageRef = useRef();
@@ -290,6 +295,10 @@ const Timeline = ({
     }
   }, [externalSelectedId, selectedElementId]);
 
+  // 计算动画轨道的总高度
+  const animationTracksHeight = animationTracks.length * TRACK_HEIGHT;
+  const totalHeight = HEADER_HEIGHT + tracks.length * TRACK_HEIGHT + animationTracksHeight;
+
   return (
     <div className="timeline" ref={containerRef}>
       <TimelineControls 
@@ -315,7 +324,7 @@ const Timeline = ({
               x={0}
               y={0}
               width={timelineWidth}
-              height={HEADER_HEIGHT + tracks.length * TRACK_HEIGHT}
+              height={totalHeight}
               fill={TIMELINE_BG_COLOR}
               name="background"
               onClick={handleBackgroundClick}
@@ -367,12 +376,35 @@ const Timeline = ({
                   />
                 );
               })}
+              
+              {/* 渲染动画轨道 */}
+              {animationTracks.map((track, index) => {
+                const element = elements.find(el => el.id === track.elementId);
+                if (!element) return null;
+                
+                // 计算轨道位置
+                const trackY = HEADER_HEIGHT + (tracks.length + index) * TRACK_HEIGHT;
+                
+                return (
+                  <AnimationTrack
+                    key={track.id}
+                    track={track}
+                    element={element}
+                    currentTime={currentTime}
+                    timeScale={timeScale}
+                    trackHeight={TRACK_HEIGHT}
+                    trackY={trackY}
+                    onUpdate={(newAttrs) => onUpdateAnimationTrack(track.id, newAttrs)}
+                    onDelete={() => onDeleteAnimationTrack(track.id)}
+                  />
+                );
+              })}
             </Group>
             
             {/* 播放头 */}
             <TimelinePlayhead 
               x={timeToXWithContext(currentTime)}
-              height={HEADER_HEIGHT + tracks.length * TRACK_HEIGHT}
+              height={totalHeight}
               headerHeight={HEADER_HEIGHT}
               playheadColor={PLAYHEAD_COLOR}
               timelinePadding={TIMELINE_PADDING}

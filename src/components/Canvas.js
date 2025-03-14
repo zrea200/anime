@@ -1,6 +1,8 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Stage, Layer, Rect, Circle, Image, Transformer, Text } from 'react-konva';
 import useImage from 'use-image';
+import { useTimeline } from '../contexts/TimelineContext';
+import { interpolateValue } from './timeline/TimelineUtils';
 
 /**
  * 图片元素组件
@@ -507,4 +509,98 @@ const Canvas = ({ elements: originalElements, selectedId, onSelect, onChange }) 
   );
 };
 
+// 这里有一个 Canvas 函数被重复声明了
+// 将第二个 Canvas 函数改名或合并到第一个函数中
+// 原来的代码：
+// function Canvas({ elements, selectedId, onSelect, onChange }) {
+//   const { currentTime } = useTimeline();
+//   
+//   应用关键帧动画
+//   const getAnimatedProps = (element) => {
+//     if (!element.keyframes) {
+//       return element;
+//     }
+//     
+//     const animatedProps = { ...element };
+//     
+//     // 处理每个可能有关键帧的属性
+//     const animatableProps = ['x', 'y', 'width', 'height', 'opacity', 'rotation'];
+//     
+//     animatableProps.forEach(prop => {
+//       if (element.keyframes[prop]) {
+//         animatedProps[prop] = interpolateValue(
+//           element.keyframes[prop],
+//           currentTime,
+//           element[prop] || getDefaultValue(prop)
+//         );
+//       }
+//     });
+//     
+//     return animatedProps;
+//   };
+//   
+//   获取属性的默认值
+//   const getDefaultValue = (prop) => {
+//     const defaults = {
+//       x: 0,
+//       y: 0,
+//       width: 100,
+//       height: 100,
+//       opacity: 1,
+//       rotation: 0
+//     };
+//     
+//     return defaults[prop] || 0;
+//   };
+//   
+//   return (
+//     <Stage width={width} height={height} ref={stageRef}>
+//       <Layer>
+//         {elements.map((element) => {
+//           // 应用关键帧动画
+//           const animatedElement = getAnimatedProps(element);
+//           
+//           使用animatedElement替代element进行渲染
+//           const isSelected = element.id === selectedId;
+//           
+//           // 根据元素类型渲染不同的组件
+//           if (element.type === 'rectangle') {
+//             return (
+//               <RectangleElement
+//                 key={element.id}
+//                 shapeProps={element}
+//                 isSelected={isSelected}
+//                 onSelect={() => onSelect(element.id)}
+//                 onChange={(newAttrs) => onChange(element.id, newAttrs)}
+//               />
+//             );
+//           } else if (element.type === 'circle') {
+//             return (
+//               <CircleElement
+//                 key={element.id}
+//                 shapeProps={element}
+//                 isSelected={isSelected}
+//                 onSelect={() => onSelect(element.id)}
+//                 onChange={(newAttrs) => onChange(element.id, newAttrs)}
+//               />
+//             );
+//           } else if (element.type === 'image') {
+//             return (
+//               <ImageElement
+//                 key={element.id}
+//                 shapeProps={element}
+//                 isSelected={isSelected}
+//                 onSelect={() => onSelect(element.id)}
+//                 onChange={(newAttrs) => onChange(element.id, newAttrs)}
+//               />
+//             );
+//           }
+//           return null;
+//         })}
+//       </Layer>
+//     </Stage>
+//   );
+// }
+
 export default Canvas;
+// export default AnimatedCanvas as Canvas;
