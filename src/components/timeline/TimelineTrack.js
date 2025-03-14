@@ -21,13 +21,16 @@ const TimelineTrack = ({
   isActive,
   trackElements,
   draggedElementId,
+  selectedElementId,
   hoveredHandle,
   timeToX,
   totalDuration,
   onDragStart,
   onDragMove,
   onDragEnd,
-  onHandleHover
+  onHandleHover,
+  onClipSelect,
+  onBackgroundClick
 }) => {
   const y = headerHeight + index * trackHeight;
   
@@ -42,6 +45,8 @@ const TimelineTrack = ({
         fill={isActive ? trackActiveColor : trackBgColor}
         stroke="#555"
         strokeWidth={1}
+        name="track-background"
+        onClick={onBackgroundClick}
       />
       
       {/* 轨道标签 */}
@@ -76,7 +81,7 @@ const TimelineTrack = ({
             trackPadding={trackPadding}
             timelinePadding={timelinePadding}
             timelineWidth={timelineWidth}
-            isDragged={element.id === draggedElementId}
+            isDragged={element.id === draggedElementId || element.id === selectedElementId}
             clipColor={clipColor}
             clipSelectedColor={clipSelectedColor}
             isLeftHandleHovered={isLeftHandleHovered}
@@ -87,6 +92,7 @@ const TimelineTrack = ({
             onMouseLeaveClip={() => {
               document.body.style.cursor = 'default';
             }}
+            onClipClick={() => onClipSelect(element.id)}
             onMouseEnterLeftHandle={() => onHandleHover(element.id, 'left', true)}
             onMouseLeaveLeftHandle={() => onHandleHover(element.id, 'left', false)}
             onMouseEnterRightHandle={() => onHandleHover(element.id, 'right', true)}

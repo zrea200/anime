@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Canvas from './components/Canvas';
 import Toolbar from './components/Toolbar';
 import LayerPanel from './components/LayerPanel';
+import PropertyPanel from './components/PropertyPanel';
 import Timeline from './components/Timeline';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -385,13 +386,22 @@ function App() {
       />
       <div className="editor-layout">
         <div className="editor-main">
-          <div className="canvas-area">
-            <Canvas 
-              elements={getVisibleElements()}
-              selectedId={selectedId}
-              onSelect={handleSelect}
-              onChange={updateElement}
-            />
+          <div className="main-content">
+            <div className="canvas-area">
+              <Canvas 
+                elements={getVisibleElements()}
+                selectedId={selectedId}
+                onSelect={handleSelect}
+                onChange={updateElement}
+              />
+            </div>
+            <div className="property-area">
+              <PropertyPanel 
+                selectedElement={elements.find(el => el.id === selectedId)}
+                onChange={updateElement}
+                elements={elements}
+              />
+            </div>
           </div>
         </div>
         <div className="bottom-panel">
@@ -419,6 +429,8 @@ function App() {
             onTimeScaleChange={setTimeScale}
             isPlaying={isPlaying}
             frameRate={frameRate}
+            selectedId={selectedId}
+            onSelect={handleSelect}
             onUpdateElement={(id, newAttrs) => {
               // 如果有trackId，将其转换回layerId
               if (newAttrs.trackId) {

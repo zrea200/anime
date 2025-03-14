@@ -21,6 +21,8 @@ import { timeToX, xToTime, formatTime } from './timeline/TimelineUtils';
  * @param {boolean} props.isPlaying - 是否正在播放
  * @param {number} props.frameRate - 帧率
  * @param {Function} props.onUpdateElement - 更新元素的回调函数
+ * @param {string|null} props.selectedId - 当前选中的元素ID
+ * @param {Function} props.onSelect - 选择元素的回调函数
  */
 const Timeline = ({
   tracks,
@@ -33,7 +35,9 @@ const Timeline = ({
   onTimeScaleChange,
   isPlaying,
   frameRate,
-  onUpdateElement
+  onUpdateElement,
+  selectedId: externalSelectedId,
+  onSelect: externalOnSelect
 }) => {
   // 引用和状态
   const stageRef = useRef();
@@ -45,6 +49,7 @@ const Timeline = ({
   const [dragType, setDragType] = useState(null); // 'start', 'end', 'move'
   const [initialDragData, setInitialDragData] = useState(null);
   const [hoveredHandle, setHoveredHandle] = useState(null); // 格式: "elementId-left" 或 "elementId-right"
+  const [selectedElementId, setSelectedElementId] = useState(null); // 当前选中的元素ID
   
   // 从App.js获取当前活动轨道ID
   const activeTrackId = tracks.length > 0 ? tracks[0].id : null;
@@ -64,7 +69,8 @@ const Timeline = ({
   const TEXT_COLOR = '#ffffff';
 
   // 计算时间轴宽度（秒数 * 缩放级别 * 100）
-  const timelineWidth = totalDuration * timeScale * 100;
+  // 确保时间轴宽度至少等于容器宽度，这样时间轴就会顶到最结尾的位置
+  const timelineWidth = Math.max(stageWidth - TIMELINE_PADDING * 2, totalDuration * timeScale * 100);
 
   // 调整舞台大小以适应容器
   useEffect(() => {
@@ -126,6 +132,9 @@ const Timeline = ({
       duration: element.duration || 5,
       pointerX: e.target.getStage().getPointerPosition().x
     });
+    
+    // 设置当前选中的元素
+    setSelectedElementId(elementId);
   };
 
   const handleClipDragMove = (e) => {
@@ -142,25 +151,52 @@ const Timeline = ({
     
     let newAttrs = {};
     
+    // 确保不超过时间轴范围
+    const maxTime = totalDuration;
+    
     if (dragType === 'start') {
       // 调整开始时间和持续时间
-      const newStartTime = Math.max(0, initialDragData.time + deltaTime);
+      const newStartTime = Math.max(0, Math.min(maxTime - 0.5, initialDragData.time + deltaTime));
       const newDuration = Math.max(0.5, initialDragData.duration - (newStartTime - initialDragData.time));
       
-      newAttrs = {
-        time: newStartTime,
-        duration: newDuration
-      };
+      // 确保结束时间不超过总时长
+      const endTime = newStartTime + newDuration;
+      if (endTime > maxTime) {
+        newAttrs = {
+          time: newStartTime,
+          duration: maxTime - newStartTime
+        };
+      } else {
+        newAttrs = {
+          time: newStartTime,
+          duration: newDuration
+        };
+      }
     } else if (dragType === 'end') {
       // 只调整持续时间
-      const newDuration = Math.max(0.5, initialDragData.duration + deltaTime);
+      // 确保结束时间不超过总时长
+      const maxDuration = maxTime - initialDragData.time;
+      const newDuration = Math.min(maxDuration, Math.max(0.5, initialDragData.duration + deltaTime));
       
       newAttrs = {
         duration: newDuration
       };
     } else if (dragType === 'move') {
       // 移动整个片段
+      // 确保片段不会超出轨道范围
       const newStartTime = Math.max(0, initialDragData.time + deltaTime);
+      
+      // 确保片段结束时间不超过总时长
+      const endTime = newStartTime + initialDragData.duration;
+      if (endTime > maxTime) {
+        newAttrs = {
+          time: maxTime - initialDragData.duration
+        };
+      } else {
+        newAttrs = {
+          time: newStartTime
+        };
+      }
       
       // 检测是否需要更改轨道
       // 计算当前指针位置对应的轨道索引
@@ -170,14 +206,23 @@ const Timeline = ({
       if (trackIndex >= 0 && trackIndex < tracks.length) {
         const newTrackId = tracks[trackIndex].id;
         
-        newAttrs = {
-          time: newStartTime,
-          trackId: newTrackId // 更新轨道ID
-        };
+        // 更新轨道ID
+        if (newAttrs.time !== undefined) {
+          newAttrs.trackId = newTrackId;
+        } else {
+          newAttrs = {
+            ...newAttrs,
+            time: newStartTime,
+            trackId: newTrackId
+          };
+        }
       } else {
-        newAttrs = {
-          time: newStartTime
-        };
+        if (newAttrs.time === undefined) {
+          newAttrs = {
+            ...newAttrs,
+            time: newStartTime
+          };
+        }
       }
     }
     
@@ -212,6 +257,38 @@ const Timeline = ({
       document.body.style.cursor = 'default';
     }
   };
+  
+  // 处理元素选中
+  const handleClipSelect = (elementId) => {
+    const newSelectedId = elementId === selectedElementId ? null : elementId;
+    setSelectedElementId(newSelectedId);
+    // 调用外部选择回调
+    if (externalOnSelect) {
+      externalOnSelect(newSelectedId);
+    }
+  };
+  
+  // 处理点击空白区域取消选中
+  const handleBackgroundClick = (e) => {
+    // 检查是否点击的是背景
+    const clickedOnEmpty = e.target === e.target.getStage() || 
+                          e.target.name() === 'background' ||
+                          e.target.name() === 'track-background';
+    if (clickedOnEmpty) {
+      setSelectedElementId(null);
+      // 调用外部选择回调
+      if (externalOnSelect) {
+        externalOnSelect(null);
+      }
+    }
+  };
+
+  // 同步外部选中状态
+  useEffect(() => {
+    if (externalSelectedId !== undefined && externalSelectedId !== selectedElementId) {
+      setSelectedElementId(externalSelectedId);
+    }
+  }, [externalSelectedId]);
 
   return (
     <div className="timeline" ref={containerRef}>
@@ -230,14 +307,7 @@ const Timeline = ({
           height={stageHeight}
           ref={stageRef}
           onWheel={handleWheel}
-          draggable="x" // 只允许水平拖动
-          dragBoundFunc={(pos) => {
-            // 限制水平拖动范围
-            return {
-              x: Math.min(0, Math.max(stageWidth - timelineWidth, pos.x)),
-              y: 0 // 固定垂直位置
-            };
-          }}
+          draggable={false} // 禁止拖动
         >
           <Layer>
             {/* 背景 */}
@@ -247,6 +317,8 @@ const Timeline = ({
               width={timelineWidth}
               height={HEADER_HEIGHT + tracks.length * TRACK_HEIGHT}
               fill={TIMELINE_BG_COLOR}
+              name="background"
+              onClick={handleBackgroundClick}
             />
             
             {/* 时间刻度 */}
@@ -282,6 +354,7 @@ const Timeline = ({
                     isActive={track.id === activeTrackId}
                     trackElements={trackElements}
                     draggedElementId={draggedElementId}
+                    selectedElementId={selectedElementId}
                     hoveredHandle={hoveredHandle}
                     timeToX={timeToXWithContext}
                     totalDuration={totalDuration}
@@ -289,6 +362,8 @@ const Timeline = ({
                     onDragMove={handleClipDragMove}
                     onDragEnd={handleClipDragEnd}
                     onHandleHover={handleHandleHover}
+                    onClipSelect={handleClipSelect}
+                    onBackgroundClick={handleBackgroundClick}
                   />
                 );
               })}

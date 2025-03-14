@@ -18,6 +18,17 @@ const ImageElement = ({ shapeProps, isSelected, onSelect, onChange }) => {
     }
   }, [isSelected]);
 
+  // 处理额外属性
+  const { opacity = 1, ...otherProps } = shapeProps;
+
+  // 获取缩放属性，如果不存在则默认为1
+  const scaleX = otherProps.scaleX !== undefined ? otherProps.scaleX : 1;
+  const scaleY = otherProps.scaleY !== undefined ? otherProps.scaleY : 1;
+  
+  // 设置旋转原点为图片中心
+  const offsetX = otherProps.width / 2;
+  const offsetY = otherProps.height / 2;
+
   return (
     <>
       <Image
@@ -25,7 +36,12 @@ const ImageElement = ({ shapeProps, isSelected, onSelect, onChange }) => {
         onClick={onSelect}
         onTap={onSelect}
         ref={shapeRef}
-        {...shapeProps}
+        {...otherProps}
+        opacity={opacity}
+        scaleX={scaleX}
+        scaleY={scaleY}
+        offsetX={offsetX}
+        offsetY={offsetY}
         draggable
         onDragStart={(e) => {
           // 阻止事件冒泡，防止触发Stage的拖动
@@ -45,24 +61,14 @@ const ImageElement = ({ shapeProps, isSelected, onSelect, onChange }) => {
         onTransformEnd={(e) => {
           // 变换结束后更新属性
           const node = shapeRef.current;
-          const scaleX = node.scaleX();
-          const scaleY = node.scaleY();
-
-          // 重置缩放
-          node.scaleX(1);
-          node.scaleY(1);
-          
-          // 计算新尺寸
-          const newWidth = Math.max(5, node.width() * scaleX);
-          const newHeight = Math.max(5, node.height() * scaleY);
           
           onChange({
             ...shapeProps,
             x: node.x(),
             y: node.y(),
-            width: newWidth,
-            height: newHeight,
             rotation: node.rotation(),
+            scaleX: node.scaleX(),
+            scaleY: node.scaleY()
           });
         }}
       />
@@ -97,13 +103,30 @@ const RectangleElement = ({ shapeProps, isSelected, onSelect, onChange }) => {
     }
   }, [isSelected]);
 
+  // 处理额外属性
+  const { cornerRadius = 0, opacity = 1, ...otherProps } = shapeProps;
+
+  // 获取缩放属性，如果不存在则默认为1
+  const scaleX = otherProps.scaleX !== undefined ? otherProps.scaleX : 1;
+  const scaleY = otherProps.scaleY !== undefined ? otherProps.scaleY : 1;
+  
+  // 设置旋转原点为矩形中心
+  const offsetX = otherProps.width / 2;
+  const offsetY = otherProps.height / 2;
+
   return (
     <>
       <Rect
         onClick={onSelect}
         onTap={onSelect}
         ref={shapeRef}
-        {...shapeProps}
+        {...otherProps}
+        cornerRadius={cornerRadius}
+        opacity={opacity}
+        scaleX={scaleX}
+        scaleY={scaleY}
+        offsetX={offsetX}
+        offsetY={offsetY}
         draggable
         onDragStart={(e) => {
           // 阻止事件冒泡，防止触发Stage的拖动
@@ -123,24 +146,14 @@ const RectangleElement = ({ shapeProps, isSelected, onSelect, onChange }) => {
         onTransformEnd={(e) => {
           // 变换结束后更新属性
           const node = shapeRef.current;
-          const scaleX = node.scaleX();
-          const scaleY = node.scaleY();
-
-          // 重置缩放
-          node.scaleX(1);
-          node.scaleY(1);
-          
-          // 计算新尺寸
-          const newWidth = Math.max(5, node.width() * scaleX);
-          const newHeight = Math.max(5, node.height() * scaleY);
           
           onChange({
             ...shapeProps,
             x: node.x(),
             y: node.y(),
-            width: newWidth,
-            height: newHeight,
             rotation: node.rotation(),
+            scaleX: node.scaleX(),
+            scaleY: node.scaleY()
           });
         }}
       />
@@ -175,13 +188,23 @@ const CircleElement = ({ shapeProps, isSelected, onSelect, onChange }) => {
     }
   }, [isSelected]);
 
+  // 处理额外属性
+  const { opacity = 1, ...otherProps } = shapeProps;
+
+  // 获取缩放属性，如果不存在则默认为1
+  const scaleX = otherProps.scaleX !== undefined ? otherProps.scaleX : 1;
+  const scaleY = otherProps.scaleY !== undefined ? otherProps.scaleY : 1;
+
   return (
     <>
       <Circle
         onClick={onSelect}
         onTap={onSelect}
         ref={shapeRef}
-        {...shapeProps}
+        {...otherProps}
+        opacity={opacity}
+        scaleX={scaleX}
+        scaleY={scaleY}
         draggable
         onDragStart={(e) => {
           // 阻止事件冒泡，防止触发Stage的拖动
@@ -201,21 +224,14 @@ const CircleElement = ({ shapeProps, isSelected, onSelect, onChange }) => {
         onTransformEnd={(e) => {
           // 变换结束后更新属性
           const node = shapeRef.current;
-          const scaleX = node.scaleX();
-
-          // 重置缩放
-          node.scaleX(1);
-          node.scaleY(1);
-          
-          // 计算新半径
-          const newRadius = Math.max(5, node.radius() * scaleX);
           
           onChange({
             ...shapeProps,
             x: node.x(),
             y: node.y(),
-            radius: newRadius,
             rotation: node.rotation(),
+            scaleX: node.scaleX(),
+            scaleY: node.scaleY()
           });
         }}
       />
@@ -260,13 +276,23 @@ const Canvas = ({ elements: originalElements, selectedId, onSelect, onChange }) 
     // 如果是新添加的元素（没有x和y坐标或者是默认值100），则将其居中放置
     if (element.x === undefined || element.y === undefined || 
         (element.x === 100 && element.y === 100 && element._isNew)) {
-      // 移除临时标记
-      const { _isNew, ...rest } = element;
+      // 计算居中位置
+      const centerX = CANVAS_WIDTH / 2 - (element.width || element.radius || 50) / 2;
+      const centerY = CANVAS_HEIGHT / 2 - (element.height || element.radius || 50) / 2;
       
+      // 更新元素位置到App组件
+      onChange(element.id, {
+        x: centerX,
+        y: centerY,
+        _isNew: false
+      });
+      
+      // 返回更新后的元素
+      const { _isNew, ...rest } = element;
       return {
         ...rest,
-        x: CANVAS_WIDTH / 2 - (element.width || element.radius || 50) / 2,
-        y: CANVAS_HEIGHT / 2 - (element.height || element.radius || 50) / 2
+        x: centerX,
+        y: centerY
       };
     }
     
