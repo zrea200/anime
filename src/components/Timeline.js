@@ -288,7 +288,7 @@ const Timeline = ({
     if (externalSelectedId !== undefined && externalSelectedId !== selectedElementId) {
       setSelectedElementId(externalSelectedId);
     }
-  }, [externalSelectedId]);
+  }, [externalSelectedId, selectedElementId]);
 
   return (
     <div className="timeline" ref={containerRef}>
